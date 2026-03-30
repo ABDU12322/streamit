@@ -12,5 +12,5 @@ const videoSchema = new Schema({
     views: { type: Number, default: 0 },
 }, { timestamps: true });
 
-// Create model directly - Mongoose doesn't require active connection
-export const Video = mongoose.model("Video", videoSchema);
+// Check if model already exists to prevent "Cannot overwrite model" error
+export const Video = mongoose.models.Video || mongoose.model("Video", videoSchema);

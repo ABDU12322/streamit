@@ -1,4 +1,5 @@
 export interface video{
+    videoID: string;
     title: string;
     description: string;
     hlsURL: string;

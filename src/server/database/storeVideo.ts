@@ -1,13 +1,30 @@
 import connectDB from "./connection";
 import { Video } from "../models/videoModel";
 import { video } from "../types/video";
-import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
-import { exec } from "child_process";
-import { promisify } from "util";
+import ffmpeg from "fluent-ffmpeg";
 
-const execAsync = promisify(exec);
+// Manually set the ffmpeg path
+const ffmpegPath = path.join(process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg.exe");
+
+console.log("FFmpeg path:", ffmpegPath);
+console.log("FFmpeg exists:", fs.existsSync(ffmpegPath));
+
+if (fs.existsSync(ffmpegPath)) {
+    ffmpeg.setFfmpegPath(ffmpegPath);
+} else {
+    console.error("FFmpeg not found at:", ffmpegPath);
+}
+
+interface FFmpegProgress {
+    percent?: number;
+    frames?: number;
+    currentFps?: number;
+    currentKbps?: number;
+    targetSize?: number;
+    timemark?: string;
+}
 
 async function storeVideo(
     videoData: video,
@@ -17,12 +34,10 @@ async function storeVideo(
     try {
         // Ensure database connection
         await connectDB();
-
-        const videoId = uuidv4();
         
         // Use public folder for video storage (accessible via URL /videos/)
         const videoStorageDir = path.join(process.cwd(), "public", "videos");
-        const videoPath = path.join(videoStorageDir, videoId);
+        const videoPath = path.join(videoStorageDir, videoData.videoID);
 
         // Create video-specific directory if it doesn't exist
         if (!fs.existsSync(videoPath)) {
@@ -30,21 +45,47 @@ async function storeVideo(
         }
 
         // Save original video with unique name under its own folder
-        const rawVideoPath = path.join(videoPath, `original_${videoId}.mp4`);
+        const rawVideoPath = path.join(videoPath, `original_${videoData.videoID}.mp4`);
         fs.writeFileSync(rawVideoPath, videoFile.buffer);
 
-        // Create HLS master playlist path (without leading space)
+        // Create HLS master playlist path
         const masterPlaylistPath = path.join(videoPath, "master.m3u8");
-        const ffmpegCommand = `ffmpeg -i "${rawVideoPath}" -c:v libx264 -c:a aac -f hls -hls_time 10 -hls_list_size 0 -hls_segment_filename "${videoPath}/segment_%03d.ts" "${masterPlaylistPath}"`;
 
-        await execAsync(ffmpegCommand);
+        // Convert video to HLS format using fluent-ffmpeg
+        await new Promise<void>((resolve, reject) => {
+            ffmpeg(rawVideoPath)
+                .outputOptions([
+                    "-c:v libx264",
+                    "-c:a aac",
+                    "-f hls",
+                    "-hls_time 10",
+                    "-hls_list_size 0",
+                    `-hls_segment_filename ${videoPath}/segment_%03d.ts`
+                ])
+                .output(masterPlaylistPath)
+                .on("start", (command: string) => {
+                    console.log("FFmpeg command:", command);
+                })
+                .on("progress", (progress: FFmpegProgress) => {
+                    console.log(`FFmpeg progress: ${progress.percent || 0}% done`);
+                })
+                .on("end", () => {
+                    console.log("HLS conversion completed successfully");
+                    resolve();
+                })
+                .on("error", (error: Error) => {
+                    console.error("FFmpeg error:", error.message);
+                    reject(new Error(`Video conversion failed: ${error.message}`));
+                })
+                .run();
+        });
 
         // Create and store video in database
         const storedVideo = await Video.create({
-            videoID: videoId,
+            videoID: videoData.videoID,
             title: videoData.title,
             description: videoData.description,
-            hlsURL: `/videos/${videoId}/master.m3u8`,
+            hlsURL: `/videos/${videoData.videoID}/master.m3u8`,
             thumbnailPath: thumbnailPath,
             uploadDate: videoData.uploadDate,
             duration: videoData.duration,

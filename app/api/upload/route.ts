@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import storeVideo from "@/src/server/database/storeVideo";
+import { v4 as uuidv4} from "uuid";
 import fs from "fs";
 import path from "path";
 
@@ -90,6 +91,7 @@ export async function POST(request: NextRequest) {
 
         // Prepare video metadata
         const videoData = {
+            videoID: uuidv4(),
             title: title.trim(),
             description: description.trim(),
             hlsURL: "", // Will be set by storeVideo
@@ -113,7 +115,7 @@ export async function POST(request: NextRequest) {
                 success: true,
                 message: "Video uploaded successfully",
                 data: {
-                    videoId: result._id,
+                    videoId: result.videoID,
                     title: result.title,
                     hlsURL: result.hlsURL,
                     thumbnailPath: result.thumbnailPath,
