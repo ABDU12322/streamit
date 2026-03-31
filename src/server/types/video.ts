@@ -1,4 +1,4 @@
-export interface video{
+export interface Video {
     videoID: string;
     title: string;
     description: string;
@@ -9,3 +9,6 @@ export interface video{
     uploader: string;
     views: number;
 }
+
+// Backwards compatibility
+export type video = Video;

@@ -56,7 +56,9 @@ export default function Dashboard(){
                         {videos.map((video)=>{
                             return (
                                 <div key={video.videoID} className="group cursor-pointer">
-                                    <VideoList video={video}/>
+                                    <Link href={`/show-video?videoID=${video.videoID}`}>
+                                        <VideoList video={video}/>
+                                    </Link>
                                 </div>
                             );
                         })}
