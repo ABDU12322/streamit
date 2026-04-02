@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
-const connectionString: string = "mongodb://localhost:27017/streamit";
+const connectionString: string = process.env.MONGODB_URI || "mongodb://localhost:27017/streamit";
 
 let cachedConnection: typeof mongoose | null = null;
 
-async function connectDB() {
+export async function connectDB() {
     // If already connected, return cached connection
     if (cachedConnection) {
         return cachedConnection;

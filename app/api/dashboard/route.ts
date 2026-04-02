@@ -1,16 +1,27 @@
-import { NextRequest,NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { video } from "@/src/server/types/video";
-import connectDB from "@/src/server/database/connection";
+import { connectDB } from "@/src/server/database/connection";
 import { Video } from "@/src/server/models/videoModel";
-export async function GET(request: NextRequest){
-    try{
+import { Group } from "@/src/server/models/groupModel";
+import { requireAuth } from "@/src/server/utils/auth";
+
+export async function GET(request: NextRequest) {
+    try {
+        // Check authentication
+        const auth = requireAuth(request);
+        if (auth.error) {
+            return auth.error;
+        }
+
         await connectDB();
-        const videos: video[]=await Video.find();
-        console.log("Fetched Videos", videos);
-        return NextResponse.json({ videos });
-    }catch(error){
-        console.error("Error fetching videos", error);
-        return NextResponse.json({ error: "Failed to fetch videos" }, { status: 500 });
+        
+        const groups = await Group.find({}).sort({ createdDate: -1 });
+        const videos: video[] = await Video.find({ groupId: null }).sort({ uploadDate: -1 });
+        
+        return NextResponse.json({ groups, videos });
+    } catch (error) {
+        console.error("Error fetching dashboard data", error);
+        return NextResponse.json({ error: "Failed to fetch dashboard data" }, { status: 500 });
     }
 }
 
@@ -19,11 +30,12 @@ export async function GET(request: NextRequest){
 export async function POST(request: NextRequest){
     try{
         await connectDB();
-        const formData = await request.formData();
-        const searchQuery = formData.get("search") as string;
+        const formData = await request.json();
+        const searchQuery = formData.search;
 
-        if (!searchQuery) {
-            return NextResponse.json({ error: "Search query required" }, { status: 400 });
+        if (!searchQuery || searchQuery.trim() === "") {
+            const videos: video[] = await Video.find({});
+            return NextResponse.json({ videos });
         }
 
         const videos: video[] = await Video.find({

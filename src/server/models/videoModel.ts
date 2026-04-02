@@ -10,6 +10,7 @@ const videoSchema = new Schema({
     duration: { type: Number, required: true },
     uploader: { type: String, required: true },
     views: { type: Number, default: 0 },
+    groupId: { type: String, default: null },
 }, { timestamps: true });
 
 // Check if model already exists to prevent "Cannot overwrite model" error

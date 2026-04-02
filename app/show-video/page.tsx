@@ -10,12 +10,15 @@ export default function ShowVideoPage() {
     const searchParamsObj = useSearchParams();
     const videoIDFromURL = searchParamsObj.get("videoID");
     const videoRef = useRef<HTMLVideoElement>(null);
+    const viewsIncrementedRef = useRef(false);
 
     const [videoURL, setVideoURL] = useState("");
     const [videoData, setVideoData] = useState<Video | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isBuffering, setIsBuffering] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [currentQuality, setCurrentQuality] = useState("auto");
 
     useEffect(() => {
@@ -47,8 +50,37 @@ export default function ShowVideoPage() {
     useEffect(() => {
         if (videoRef.current && videoURL) {
             initializeHLSPlayer(videoRef.current, videoURL);
+            
+            // Increment views when video starts playing
+            const handlePlay = async () => {
+                if (!viewsIncrementedRef.current && videoIDFromURL) {
+                    viewsIncrementedRef.current = true;
+                    try {
+                        const response = await fetch(`/api/show-video?videoID=${videoIDFromURL}`, {
+                            method: 'PUT'
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            // Update videoData with new views count
+                            setVideoData(prev => prev ? {
+                                ...prev,
+                                views: data.views
+                            } : null);
+                        }
+                    } catch (err) {
+                        console.error("Error incrementing views:", err);
+                    }
+                }
+            };
+
+            const videoElement = videoRef.current;
+            videoElement?.addEventListener('play', handlePlay, { once: true });
+            
+            return () => {
+                videoElement?.removeEventListener('play', handlePlay);
+            };
         }
-    }, [videoURL]);
+    }, [videoURL, videoIDFromURL]);
 
     const formatDate = (date: Date) => {
         return new Date(date).toLocaleDateString("en-US", {

@@ -21,3 +21,27 @@ export async function GET(request: NextRequest){
         return NextResponse.json({error: "Internal server error"}, {status: 500});
     }
 }
+
+export async function PUT(request: NextRequest){
+    const searchParams = request.nextUrl.searchParams;
+    const videoID = searchParams.get("videoID");
+    if(!videoID){
+        return NextResponse.json({error: "Missing videoID parameter"}, {status: 400});
+    }
+    try{
+        await connectDB();
+        const videoData = await videoModel.findOneAndUpdate(
+            {videoID},
+            { $inc: { views: 1 } },
+            { new: true }
+        );
+        if(!videoData){
+            return NextResponse.json({error: "Video not found"}, {status: 404});
+        }
+        return NextResponse.json({success: true, views: videoData.views});
+    }
+    catch(e){
+        console.error("Error updating video views: ", e);
+        return NextResponse.json({error: "Internal server error"}, {status: 500});
+    }
+}

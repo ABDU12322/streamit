@@ -8,6 +8,7 @@ export interface Video {
     duration: number;
     uploader: string;
     views: number;
+    groupId?: string | null;
 }
 
 // Backwards compatibility

@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import storeVideo from "@/src/server/database/storeVideo";
+import { connectDB } from "@/src/server/database/connection";
+import { Group } from "@/src/server/models/groupModel";
+import { requireAuth } from "@/src/server/utils/auth";
 import { v4 as uuidv4} from "uuid";
 import fs from "fs";
 import path from "path";
 
 export async function POST(request: NextRequest) {
     try {
+        // Check authentication
+        const auth = requireAuth(request);
+        if (auth.error) {
+            return auth.error;
+        }
+
+        const currentUser = auth.user?.username;
+
         // Parse the FormData from request
         const formData = await request.formData();
 
@@ -14,6 +25,7 @@ export async function POST(request: NextRequest) {
         const description = formData.get("description") as string;
         const videoFile = formData.get("video") as File;
         const thumbnailFile = formData.get("thumbnail") as File;
+        const groupId = formData.get("groupId") as string | null;
 
         // Validation: Check all required fields are present
         if (!title || !title.trim()) {
@@ -69,7 +81,33 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Convert video file to buffer
+        // Validate group ownership if groupId is provided
+        if (groupId) {
+            try {
+                await connectDB();
+                const group = await Group.findOne({ groupID: groupId });
+
+                if (!group) {
+                    return NextResponse.json(
+                        { error: "Group not found" },
+                        { status: 404 }
+                    );
+                }
+
+                if (group.createdBy !== currentUser) {
+                    return NextResponse.json(
+                        { error: "You can only upload to your own shows" },
+                        { status: 403 }
+                    );
+                }
+            } catch (error) {
+                console.error("Error validating group ownership:", error);
+                return NextResponse.json(
+                    { error: "Failed to validate group" },
+                    { status: 500 }
+                );
+            }
+        }
         const videoBuffer = await videoFile.arrayBuffer();
         const videoFileData = {
             buffer: new Uint8Array(videoBuffer),
@@ -88,7 +126,7 @@ export async function POST(request: NextRequest) {
         const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
         const thumbnailBuffer = await thumbnailFile.arrayBuffer();
         fs.writeFileSync(thumbnailPath, Buffer.from(thumbnailBuffer));
-
+        console.log("groupid: ", groupId);
         // Prepare video metadata
         const videoData = {
             videoID: uuidv4(),
@@ -98,8 +136,9 @@ export async function POST(request: NextRequest) {
             thumbnailPath: `/thumbnails/${thumbnailFilename}`,
             uploadDate: new Date(),
             duration: 0, // You can extract this from ffmpeg if needed
-            uploader: "user", // Replace with actual user from session/auth
+            uploader: currentUser || "user",
             views: 0,
+            groupId: groupId
         };
 
         // Call storeVideo service to process and store
@@ -108,6 +147,14 @@ export async function POST(request: NextRequest) {
             `/thumbnails/${thumbnailFilename}`,
             videoFileData
         );
+
+        // Increment videoCount in the group document if groupId is provided
+        if (groupId) {
+            await Group.updateOne(
+                { groupID: groupId },
+                { $inc: { videoCount: 1 } }
+            );
+        }
 
         // Return success response
         return NextResponse.json(
