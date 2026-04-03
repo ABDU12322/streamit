@@ -20,9 +20,9 @@ export default function Home() {
     }, [router]);
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
             <div className="animate-pulse">
-                <p className="text-white text-xl">Redirecting...</p>
+                <p className="text-emerald-400 text-xl font-semibold">Redirecting...</p>
             </div>
         </div>
     );

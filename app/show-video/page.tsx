@@ -102,13 +102,13 @@ export default function ShowVideoPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
+        <div className="min-h-screen bg-slate-950">
             <Navbar />
 
             {/* Error State */}
             {error && (
                 <div className="max-w-7xl mx-auto px-4 py-8">
-                    <div className="bg-red-500/20 border border-red-500 text-red-300 px-6 py-4 rounded-lg">
+                    <div className="bg-red-500/20 border border-red-500/50 text-red-300 px-6 py-4 rounded-lg">
                         <p className="font-semibold">Error: {error}</p>
                         <p className="text-sm text-red-200 mt-2">
                             Make sure the video exists and the URL has a valid videoID parameter.
@@ -124,7 +124,7 @@ export default function ShowVideoPage() {
                         <div className="inline-block">
                             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
                         </div>
-                        <p className="text-gray-400 mt-4 text-lg">Loading video...</p>
+                        <p className="text-slate-400 mt-4 text-lg">Loading video...</p>
                     </div>
                 </div>
             )}
@@ -133,7 +133,7 @@ export default function ShowVideoPage() {
             {videoURL && (
                 <div className="max-w-7xl mx-auto px-4 py-8">
                     {/* Video Player Container - Fixed 16:9 Aspect Ratio */}
-                    <div className="relative bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800 group aspect-video">
+                    <div className="relative bg-slate-900 rounded-xl overflow-hidden shadow-2xl shadow-emerald-500/10 border border-slate-700 group aspect-video">
                         <video
                             ref={videoRef}
                             className="w-full h-full bg-black object-contain object-center"
@@ -144,8 +144,8 @@ export default function ShowVideoPage() {
                         {/* Buffering Indicator */}
                         {isBuffering && (
                             <div className="absolute top-4 right-4 flex items-center gap-2 bg-black/70 px-3 py-1 rounded-full backdrop-blur">
-                                <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                                <span className="text-yellow-500 text-xs font-semibold">Buffering</span>
+                                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                                <span className="text-emerald-300 text-xs font-semibold">Buffering</span>
                             </div>
                         )}
 
@@ -164,14 +164,14 @@ export default function ShowVideoPage() {
                 <div className="max-w-7xl mx-auto px-4 py-8">
                     {/* Title */}
                     <div className="mb-8">
-                        <h1 className="text-4xl font-bold text-white mb-4">{videoData.title}</h1>
+                        <h1 className="text-4xl font-bold text-slate-100 mb-4">{videoData.title}</h1>
 
                         {/* Stats Row */}
-                        <div className="flex flex-wrap items-center gap-6 pb-6 border-b border-gray-700">
+                        <div className="flex flex-wrap items-center gap-6 pb-6 border-b border-slate-700">
                             {/* Views */}
                             <div className="flex items-center gap-2">
                                 <svg
-                                    className="w-5 h-5 text-emerald-500"
+                                    className="w-5 h-5 text-emerald-400"
                                     fill="currentColor"
                                     viewBox="0 0 20 20"
                                 >
@@ -182,15 +182,15 @@ export default function ShowVideoPage() {
                                         clipRule="evenodd"
                                     />
                                 </svg>
-                                <span className="text-gray-300">
-                                    <span className="font-semibold text-white">{videoData.views.toLocaleString()}</span> views
+                                <span className="text-slate-400">
+                                    <span className="font-semibold text-slate-100">{videoData.views.toLocaleString()}</span> views
                                 </span>
                             </div>
 
                             {/* Duration */}
                             <div className="flex items-center gap-2">
                                 <svg
-                                    className="w-5 h-5 text-emerald-500"
+                                    className="w-5 h-5 text-emerald-400"
                                     fill="currentColor"
                                     viewBox="0 0 20 20"
                                 >
@@ -200,13 +200,13 @@ export default function ShowVideoPage() {
                                         clipRule="evenodd"
                                     />
                                 </svg>
-                                <span className="text-gray-300">{formatDuration(videoData.duration)}</span>
+                                <span className="text-slate-400">{formatDuration(videoData.duration)}</span>
                             </div>
 
                             {/* Upload Date */}
                             <div className="flex items-center gap-2">
                                 <svg
-                                    className="w-5 h-5 text-emerald-500"
+                                    className="w-5 h-5 text-emerald-400"
                                     fill="currentColor"
                                     viewBox="0 0 20 20"
                                 >
@@ -216,28 +216,28 @@ export default function ShowVideoPage() {
                                         clipRule="evenodd"
                                     />
                                 </svg>
-                                <span className="text-gray-300">{formatDate(videoData.uploadDate)}</span>
+                                <span className="text-slate-400">{formatDate(videoData.uploadDate)}</span>
                             </div>
                         </div>
 
                         {/* Uploader */}
                         <div className="mt-6 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
                                 <span className="text-white font-bold text-lg">
                                     {videoData.uploader.charAt(0).toUpperCase()}
                                 </span>
                             </div>
                             <div>
-                                <p className="text-gray-400 text-sm">Uploaded by</p>
-                                <p className="text-white font-semibold text-lg">{videoData.uploader}</p>
+                                <p className="text-slate-400 text-sm">Uploaded by</p>
+                                <p className="text-slate-100 font-semibold text-lg">{videoData.uploader}</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Description */}
-                    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 backdrop-blur">
-                        <h2 className="text-white font-semibold mb-3 text-lg">Description</h2>
-                        <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    <div className="bg-slate-800 rounded-xl border border-slate-700 hover:border-slate-600 transition-all duration-300 shadow-lg hover:shadow-xl p-6">
+                        <h2 className="text-slate-100 font-semibold mb-3 text-lg">Description</h2>
+                        <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
                             {videoData.description || "No description provided."}
                         </p>
                     </div>
@@ -245,23 +245,23 @@ export default function ShowVideoPage() {
                     {/* Streaming Info */}
                     <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Video ID Card */}
-                        <div className="bg-gray-800/30 border border-gray-700 rounded-lg p-4 backdrop-blur">
-                            <p className="text-gray-400 text-xs uppercase tracking-wider">Video ID</p>
-                            <p className="text-white font-mono text-sm mt-2 break-all">{videoData.videoID}</p>
+                        <div className="bg-slate-800 rounded-xl border border-slate-700 hover:border-slate-600 transition-all duration-300 shadow-lg hover:shadow-xl p-4">
+                            <p className="text-slate-500 text-xs uppercase tracking-wider">Video ID</p>
+                            <p className="text-slate-100 font-mono text-sm mt-2 break-all">{videoData.videoID}</p>
                         </div>
 
                         {/* Format Card */}
-                        <div className="bg-gray-800/30 border border-gray-700 rounded-lg p-4 backdrop-blur">
-                            <p className="text-gray-400 text-xs uppercase tracking-wider">Format</p>
-                            <p className="text-emerald-500 font-semibold text-sm mt-2">HLS Streaming</p>
+                        <div className="bg-slate-800 rounded-xl border border-slate-700 hover:border-slate-600 transition-all duration-300 shadow-lg hover:shadow-xl p-4">
+                            <p className="text-slate-500 text-xs uppercase tracking-wider">Format</p>
+                            <p className="text-emerald-400 font-semibold text-sm mt-2">HLS Streaming</p>
                         </div>
 
                         {/* Status Card */}
-                        <div className="bg-gray-800/30 border border-gray-700 rounded-lg p-4 backdrop-blur">
-                            <p className="text-gray-400 text-xs uppercase tracking-wider">Status</p>
+                        <div className="bg-slate-800 rounded-xl border border-slate-700 hover:border-slate-600 transition-all duration-300 shadow-lg hover:shadow-xl p-4">
+                            <p className="text-slate-500 text-xs uppercase tracking-wider">Status</p>
                             <div className="flex items-center gap-2 mt-2">
-                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                                <p className="text-emerald-500 font-semibold text-sm">Ready</p>
+                                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                                <p className="text-emerald-400 font-semibold text-sm">Ready</p>
                             </div>
                         </div>
                     </div>
