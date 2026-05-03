@@ -46,7 +46,7 @@ export default function Login() {
 
             // Add small delay to ensure cookies are processed before redirect
             setTimeout(() => {
-                setLoading(false);
+                setLoading(false); 
                 console.log("Redirecting to dashboard...");
                 router.replace("/dashboard");
             }, 100);
